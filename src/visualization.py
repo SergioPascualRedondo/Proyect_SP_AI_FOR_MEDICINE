@@ -51,13 +51,8 @@ def plot_categorical_proportions(df, columns, target="condition"):
     axes = axes.ravel()
 
     for i, column in enumerate(columns):
-        prop = (
-            df.groupby([column, target])
-            .size()
-            .groupby(level=0)
-            .apply(lambda x: x / x.sum())
-            .reset_index(name="proportion")
-        )
+        prop = df.groupby([column, target]).size().reset_index(name="count")
+        prop["proportion"] = prop["count"] / prop.groupby(column)["count"].transform("sum")
         sns.barplot(data=prop, x=column, y="proportion", hue=target, ax=axes[i])
         axes[i].set_ylim(0, 1)
         axes[i].set_title(f"Condition proportion by {column}")

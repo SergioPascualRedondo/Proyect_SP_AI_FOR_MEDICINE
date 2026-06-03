@@ -1,4 +1,7 @@
-﻿import pandas as pd
+import os
+
+import pandas as pd
+from joblib import parallel_backend
 from sklearn.model_selection import GridSearchCV, RepeatedStratifiedKFold, StratifiedKFold, cross_validate, train_test_split
 
 from .config import SEED, TARGET
@@ -32,15 +35,17 @@ def nested_cv_stage(train_df, stage_name, stage_features, model_name, model_spec
         scoring="roc_auc",
         refit=True,
     )
-    scores = cross_validate(
-        search,
-        X,
-        y,
-        cv=outer_cv,
-        scoring=["roc_auc", "accuracy", "balanced_accuracy"],
-        return_train_score=False,
-        n_jobs=-1,
-    )
+    backend = "threading" if os.name == "nt" else "loky"
+    with parallel_backend(backend):
+        scores = cross_validate(
+            search,
+            X,
+            y,
+            cv=outer_cv,
+            scoring=["roc_auc", "accuracy", "balanced_accuracy"],
+            return_train_score=False,
+            n_jobs=-1,
+        )
 
     rows = []
     for i, auc in enumerate(scores["test_roc_auc"]):
