@@ -1,5 +1,7 @@
 ﻿# Clinically staged heart disease prediction
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/SergioPascualRedondo/Proyect_SP_AI_FOR_MEDICINE/blob/main/notebooks/heart_disease_clinical_stages.ipynb)
+
 This project studies the Cleveland Heart Disease dataset as a clinically staged machine learning problem.
 
 The main question is not only whether a model can predict heart disease, but how prediction performance changes when progressively more specialised clinical information is available:
@@ -35,3 +37,4 @@ results/tables/                    Generated result tables
 - The outer loop estimates generalization performance.
 - Clinical stages are compared using the same splits to make results comparable.
 - The notebook contains the full narrative, including medical motivation, dataset inspection, pipeline design, results, limitations, ethics, and reproducibility.
+
