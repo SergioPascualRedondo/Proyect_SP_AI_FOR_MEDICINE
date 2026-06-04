@@ -42,7 +42,7 @@ The modelling workflow uses:
 
 The pipeline is important because preprocessing is fitted only inside the training folds. This reduces data leakage and makes the experiment reproducible.
 
-<img src="figures/heart_disease_staged_pipeline_en.svg" width="650">
+<img src="heart_disease_staged_pipeline_en (1).svg" width="650">
 
 *Figure 1. Overview of the staged, leakage-safe pipeline, from the Cleveland dataset to final staged evaluation and SHAP interpretation.*
 
