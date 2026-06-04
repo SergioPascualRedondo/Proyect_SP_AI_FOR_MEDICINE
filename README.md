@@ -17,8 +17,8 @@ This follows the main methodology of the course: first understand the medical pr
 
 ```text
 notebooks/heart_disease_clinical_stages.ipynb    Main executable notebook
-AI_for_Medicine_Project_Report_Sergio_FINAL_CLEAN.docx
-                                                  Final project report
+Heart_Disease_Project_Report.docx              Final project report
+Heart_Disease_Project_Report.pdf               Final project report as PDF
 data/raw/heart_cleveland_upload.csv              Local dataset
 src/                                             Helper Python modules
 results/figures/                                Saved plots
@@ -59,7 +59,7 @@ Then open and run:
 notebooks/heart_disease_clinical_stages.ipynb
 ```
 
-The notebook also includes a Colab badge at the top, so it can be opened directly in Google Colab.
+The notebook is prepared to run in Google Colab from the GitHub repository.
 
 ## Main Results
 
