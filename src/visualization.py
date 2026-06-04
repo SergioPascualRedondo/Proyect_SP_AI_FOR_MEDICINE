@@ -178,3 +178,91 @@ def plot_roc_curves_by_stage(stage_score_rows):
     ax.grid(True, alpha=0.3)
     return fig, ax
 
+
+def save_final_stage_plots(stage_score_rows, confusion_dir, roc_dir, summary_dir):
+    """Save individual and combined final-test plots for all clinical stages."""
+    fig_cm, axes = plt.subplots(2, 2, figsize=(10, 8))
+    axes = axes.ravel()
+
+    for ax, row in zip(axes, stage_score_rows):
+        y_pred = (row["y_score"] >= row["threshold"]).astype(int)
+        ConfusionMatrixDisplay.from_predictions(
+            row["y_true"],
+            y_pred,
+            display_labels=["No disease", "Disease"],
+            ax=ax,
+            colorbar=False,
+        )
+        ax.set_title(row["stage"].replace(" - ", "\n"))
+
+        short_name = stage_filename(row["stage"])
+        fig, _ = plot_confusion_matrix_from_scores(
+            row["y_true"],
+            row["y_score"],
+            row["threshold"],
+            title=f"{row['stage']} confusion matrix",
+        )
+        save_figure(fig, confusion_dir / f"final_test_confusion_matrix_{short_name}.png")
+        plt.close(fig)
+
+        fig, _ = plot_roc_curve_from_scores(
+            row["y_true"],
+            row["y_score"],
+            title=f"{row['stage']} ROC curve",
+        )
+        save_figure(fig, roc_dir / f"final_test_roc_curve_{short_name}.png")
+        plt.close(fig)
+
+    for ax in axes[len(stage_score_rows):]:
+        ax.axis("off")
+
+    fig_cm.suptitle("Final test confusion matrices by clinical stage", y=1.02)
+    save_figure(fig_cm, summary_dir / "final_test_confusion_matrices_by_stage.png")
+
+    fig_roc, _ = plot_roc_curves_by_stage(stage_score_rows)
+    save_figure(fig_roc, summary_dir / "final_test_roc_curves_by_stage.png")
+
+    return fig_cm, fig_roc
+
+
+def save_shap_beeswarm(pipeline, X_background, X_to_explain, figure_path, table_path, max_display=12):
+    """Explain a fitted logistic-regression pipeline and save SHAP outputs."""
+    import numpy as np
+    import pandas as pd
+    import shap
+
+    preprocessor = pipeline.named_steps["preprocessor"]
+    classifier = pipeline.named_steps["clf"]
+
+    X_background_processed = preprocessor.transform(X_background)
+    X_explain_processed = preprocessor.transform(X_to_explain)
+
+    if hasattr(X_background_processed, "toarray"):
+        X_background_processed = X_background_processed.toarray()
+        X_explain_processed = X_explain_processed.toarray()
+
+    feature_names = [name.split("__", 1)[-1] for name in preprocessor.get_feature_names_out()]
+    X_background_shap = pd.DataFrame(X_background_processed, columns=feature_names)
+    X_explain_shap = pd.DataFrame(X_explain_processed, columns=feature_names)
+
+    masker = shap.maskers.Independent(X_background_shap, max_samples=len(X_background_shap))
+    explainer = shap.LinearExplainer(classifier, masker)
+    shap_values = explainer(X_explain_shap)
+
+    shap_importance = (
+        pd.DataFrame({
+            "feature": feature_names,
+            "mean_abs_shap": np.abs(shap_values.values).mean(axis=0),
+        })
+        .sort_values("mean_abs_shap", ascending=False)
+    )
+    shap_importance.to_csv(table_path, index=False)
+
+    plt.figure(figsize=(8, 6))
+    shap.plots.beeswarm(shap_values, max_display=max_display, show=False)
+    plt.title("SHAP beeswarm - final Logistic Regression model")
+    plt.tight_layout()
+    plt.savefig(figure_path, dpi=200, bbox_inches="tight")
+
+    return shap_importance
+
