@@ -18,17 +18,17 @@ def candidate_models():
     """Return simple, interpretable candidate classifiers and their grids."""
     return {
         "Logistic Regression": {
-            "estimator": LogisticRegression(max_iter=1000, class_weight="balanced", random_state=SEED),
+            "estimator": LogisticRegression(max_iter=1000, random_state=SEED),
             "param_grid": {
                 "clf__C": [0.01, 0.1, 1, 10],
                 "clf__solver": ["liblinear"],
             },
         },
         "Random Forest": {
-            "estimator": RandomForestClassifier(class_weight="balanced", random_state=SEED),
+            "estimator": RandomForestClassifier(random_state=SEED),
             "param_grid": {
-                "clf__n_estimators": [100, 300],
-                "clf__max_depth": [None, 3, 5],
+                "clf__n_estimators": [100],
+                "clf__max_depth": [None, 5],
                 "clf__min_samples_leaf": [1, 5],
             },
         },
