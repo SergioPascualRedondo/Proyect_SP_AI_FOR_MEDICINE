@@ -1,5 +1,4 @@
 # How Early Can Heart Disease Be Predicted?
-
 ## A Staged Machine Learning Analysis of the Cleveland UCI Dataset
 
 AI for Medicine project using the Cleveland Heart Disease dataset.
@@ -29,12 +28,10 @@ requirements.txt                                Reproducible Python environment
 ## Method
 
 The project uses a binary target:
-
 - `condition = 0`: no heart disease
 - `condition = 1`: heart disease
 
 The modelling workflow uses:
-
 - a locked stratified test set;
 - scikit-learn `Pipeline` and `ColumnTransformer`;
 - imputation, scaling and one-hot encoding inside the pipeline;
@@ -44,6 +41,10 @@ The modelling workflow uses:
 - threshold analysis, confusion matrices, ROC curves and SHAP interpretation.
 
 The pipeline is important because preprocessing is fitted only inside the training folds. This reduces data leakage and makes the experiment reproducible.
+
+<img src="figures/heart_disease_staged_pipeline_en.svg" width="650">
+
+*Figure 1. Overview of the staged, leakage-safe pipeline, from the Cleveland dataset to final staged evaluation and SHAP interpretation.*
 
 ## How to Run
 
@@ -88,7 +89,6 @@ Stage 1 misses many diseased patients, while Stage 2 substantially improves earl
 ## Reproducibility
 
 The repository includes:
-
 - fixed random seed;
 - pinned package versions;
 - saved tables and figures;
