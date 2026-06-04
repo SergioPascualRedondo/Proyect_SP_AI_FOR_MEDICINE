@@ -171,7 +171,7 @@ def plot_roc_curve_from_scores(y_true, y_score, title):
 def plot_roc_curves_by_stage(stage_score_rows):
     fig, ax = plt.subplots(figsize=(7, 5))
     for row in stage_score_rows:
-        label = f"{row['stage']} (AUC={row['roc_auc']:.3f})"
+        label = row["stage"]
         RocCurveDisplay.from_predictions(row["y_true"], row["y_score"], name=label, ax=ax)
     ax.plot([0, 1], [0, 1], linestyle="--", color="gray", linewidth=1)
     ax.set_title("Final test ROC curves by clinical stage")
