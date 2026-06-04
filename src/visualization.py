@@ -127,3 +127,44 @@ def plot_threshold_tradeoff(threshold_table, title="Threshold trade-off"):
     ax.legend()
     ax.grid(True, alpha=0.3)
     return fig, ax
+
+
+def stage_filename(stage_name):
+    """Create a simple filename from a clinical stage name."""
+    stage_id = stage_name.split(" - ")[0].lower().replace(" ", "_")
+    return stage_id.replace("/", "_")
+
+
+def plot_confusion_matrix_from_scores(y_true, y_score, threshold, title):
+    y_pred = (y_score >= threshold).astype(int)
+    fig, ax = plt.subplots(figsize=(5, 4))
+    ConfusionMatrixDisplay.from_predictions(
+        y_true,
+        y_pred,
+        display_labels=["No disease", "Disease"],
+        ax=ax,
+        colorbar=False,
+    )
+    ax.set_title(title)
+    return fig, ax
+
+
+def plot_roc_curve_from_scores(y_true, y_score, title):
+    fig, ax = plt.subplots(figsize=(5, 4))
+    RocCurveDisplay.from_predictions(y_true, y_score, ax=ax)
+    ax.plot([0, 1], [0, 1], linestyle="--", color="gray", linewidth=1)
+    ax.set_title(title)
+    ax.grid(True, alpha=0.3)
+    return fig, ax
+
+
+def plot_roc_curves_by_stage(stage_score_rows):
+    fig, ax = plt.subplots(figsize=(7, 5))
+    for row in stage_score_rows:
+        label = f"{row['stage']} (AUC={row['roc_auc']:.3f})"
+        RocCurveDisplay.from_predictions(row["y_true"], row["y_score"], name=label, ax=ax)
+    ax.plot([0, 1], [0, 1], linestyle="--", color="gray", linewidth=1)
+    ax.set_title("Final test ROC curves by clinical stage")
+    ax.grid(True, alpha=0.3)
+    return fig, ax
+
