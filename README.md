@@ -1,4 +1,6 @@
-# Clinically Staged Heart Disease Prediction
+# How Early Can Heart Disease Be Predicted?
+
+## A Staged Machine Learning Analysis of the Cleveland UCI Dataset
 
 AI for Medicine project using the Cleveland Heart Disease dataset.
 
