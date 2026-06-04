@@ -4,6 +4,12 @@ __pycache__/
 .ipynb_checkpoints/
 results/*.json
 notebooks/*.executed.ipynb
+docx_render_check_final/
+
+AI_for_Medicine_Project_Report_Sergio_DRAFT*.docx
+AI_for_Medicine_Project_Report_Sergio_FINAL.docx
+AI_for_Medicine_Project_Report_Sergio_FINAL_REVISED.docx
+AI_for_Medicine_Project_Template*.docx
 
 ~$*.docx
 ~$*.xlsx
