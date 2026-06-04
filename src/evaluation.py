@@ -1,6 +1,6 @@
 ﻿import numpy as np
 import pandas as pd
-from sklearn.metrics import accuracy_score, balanced_accuracy_score, confusion_matrix
+from sklearn.metrics import accuracy_score, balanced_accuracy_score, brier_score_loss, confusion_matrix
 from sklearn.metrics import precision_score, recall_score, roc_auc_score
 from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_predict
 
@@ -18,6 +18,7 @@ def classification_metrics(y_true, y_score, threshold=0.5):
         "sensitivity": recall_score(y_true, y_pred),
         "specificity": specificity,
         "precision": precision_score(y_true, y_pred, zero_division=0),
+        "brier_score": brier_score_loss(y_true, y_score),
         "tn": int(tn),
         "fp": int(fp),
         "fn": int(fn),
@@ -33,6 +34,26 @@ def threshold_metrics_table(y_true, y_score, thresholds=None):
 
     rows = [classification_metrics(y_true, y_score, threshold=t) for t in thresholds]
     return pd.DataFrame(rows)
+
+
+def bootstrap_auc_ci(y_true, y_score, n_bootstraps=1000, seed=42):
+    """Estimate a 95% bootstrap confidence interval for ROC-AUC."""
+    rng = np.random.default_rng(seed)
+    y_true = np.asarray(y_true)
+    y_score = np.asarray(y_score)
+    aucs = []
+
+    for _ in range(n_bootstraps):
+        sample_idx = rng.integers(0, len(y_true), len(y_true))
+        if len(np.unique(y_true[sample_idx])) < 2:
+            continue
+        aucs.append(roc_auc_score(y_true[sample_idx], y_score[sample_idx]))
+
+    if not aucs:
+        return np.nan, np.nan
+
+    low, high = np.percentile(aucs, [2.5, 97.5])
+    return float(low), float(high)
 
 
 def evaluate_selected_strategy(
@@ -80,6 +101,9 @@ def evaluate_selected_strategy(
         y_test_score,
         thresholds=dev_threshold_table["threshold"].to_numpy(),
     )
+    auc_ci_low, auc_ci_high = bootstrap_auc_ci(y_test, y_test_score, seed=seed)
+    test_threshold_table["roc_auc_ci_low"] = auc_ci_low
+    test_threshold_table["roc_auc_ci_high"] = auc_ci_high
     y_test_pred = (y_test_score >= report_threshold).astype(int)
 
     return {
@@ -92,6 +116,8 @@ def evaluate_selected_strategy(
         "y_test_pred": y_test_pred,
         "dev_threshold_table": dev_threshold_table,
         "test_threshold_table": test_threshold_table,
+        "roc_auc_ci_low": auc_ci_low,
+        "roc_auc_ci_high": auc_ci_high,
         "report_threshold": report_threshold,
     }
 
@@ -149,6 +175,7 @@ def evaluate_stages_on_final_test(
 
         search.fit(X_dev, y_dev)
         y_test_score = search.predict_proba(X_test)[:, 1]
+        auc_ci_low, auc_ci_high = bootstrap_auc_ci(y_test, y_test_score, seed=seed)
         test_metrics = threshold_metrics_table(
             y_test,
             y_test_score,
@@ -161,6 +188,8 @@ def evaluate_stages_on_final_test(
             "selected_threshold_from_development": selected_threshold,
             "development_balanced_accuracy_at_threshold": best_threshold_row["balanced_accuracy"],
             "best_params": str(search.best_params_),
+            "roc_auc_ci_low": auc_ci_low,
+            "roc_auc_ci_high": auc_ci_high,
         }
         row.update(test_metrics)
         test_rows.append(row)

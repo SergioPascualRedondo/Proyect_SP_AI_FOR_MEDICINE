@@ -72,7 +72,16 @@ Nested cross-validation shows a staged improvement in ROC-AUC:
 
 The most relevant clinical finding is not simply that Stage 4 performs best. The largest improvement appears from Stage 1 to Stage 2, suggesting that symptoms and resting ECG add important information before more advanced tests are available.
 
-Final test results also support the staged interpretation: Stage 1 misses many diseased patients, while Stage 2 substantially improves early detection. Stage 4 reaches the best final performance, but it uses advanced variables that are closer to the final diagnostic process.
+Final test results also support the staged interpretation. Bootstrap 95% confidence intervals are reported because the locked test set contains only 60 patients:
+
+| Stage | Final ROC-AUC (95% CI) | Selected threshold |
+| --- | ---: | ---: |
+| Stage 1 - Routine risk factors | 0.823 (0.703-0.920) | 0.5 |
+| Stage 2 - Symptoms and resting ECG | 0.919 (0.842-0.975) | 0.5 |
+| Stage 3 - Exercise stress test | 0.908 (0.826-0.967) | 0.6 |
+| Stage 4 - Advanced diagnostic tests | 0.955 (0.900-0.993) | 0.5 |
+
+Stage 1 misses many diseased patients, while Stage 2 substantially improves early detection. Stage 4 reaches the best final performance, but it uses advanced variables that are closer to the final diagnostic process. The confidence intervals overlap between later stages, so small differences should not be overinterpreted.
 
 ## Reproducibility
 
@@ -81,6 +90,7 @@ The repository includes:
 - fixed random seed;
 - pinned package versions;
 - saved tables and figures;
+- bootstrap confidence intervals for final ROC-AUC;
 - source code separated into small helper modules;
 - final report and executable notebook.
 
