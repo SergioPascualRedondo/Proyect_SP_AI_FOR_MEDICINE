@@ -179,6 +179,14 @@ def plot_roc_curves_by_stage(stage_score_rows):
     return fig, ax
 
 
+def save_threshold_analysis(threshold_table, table_path, figure_path, title):
+    """Save threshold metrics and the corresponding trade-off plot."""
+    threshold_table.to_csv(table_path, index=False)
+    fig, ax = plot_threshold_tradeoff(threshold_table, title=title)
+    save_figure(fig, figure_path)
+    return fig, ax
+
+
 def save_final_stage_plots(stage_score_rows, confusion_dir, roc_dir, summary_dir):
     """Save individual and combined final-test plots for all clinical stages."""
     fig_cm, axes = plt.subplots(2, 2, figsize=(10, 8))

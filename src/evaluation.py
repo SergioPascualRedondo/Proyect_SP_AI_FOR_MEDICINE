@@ -35,6 +35,67 @@ def threshold_metrics_table(y_true, y_score, thresholds=None):
     return pd.DataFrame(rows)
 
 
+def evaluate_selected_strategy(
+    train_df,
+    test_df,
+    selected_features,
+    selected_spec,
+    build_pipeline,
+    split_features_target,
+    seed,
+    threshold_grid=None,
+    report_threshold=0.5,
+):
+    """Tune the selected model, inspect thresholds and score the locked test set."""
+    if threshold_grid is None:
+        threshold_grid = np.round(np.arange(0.1, 1.0, 0.1), 2)
+
+    X_dev, y_dev = split_features_target(train_df, selected_features)
+    X_test, y_test = split_features_target(test_df, selected_features)
+
+    pipeline = build_pipeline(selected_features, selected_spec["estimator"])
+    search = GridSearchCV(
+        estimator=pipeline,
+        param_grid=selected_spec["param_grid"],
+        cv=StratifiedKFold(n_splits=5, shuffle=True, random_state=seed),
+        scoring="roc_auc",
+        refit=True,
+    )
+
+    oof_score = cross_val_predict(
+        search,
+        X_dev,
+        y_dev,
+        cv=StratifiedKFold(n_splits=5, shuffle=True, random_state=seed),
+        method="predict_proba",
+        n_jobs=1,
+    )[:, 1]
+
+    dev_threshold_table = threshold_metrics_table(y_dev, oof_score, thresholds=threshold_grid)
+
+    search.fit(X_dev, y_dev)
+    y_test_score = search.predict_proba(X_test)[:, 1]
+    test_threshold_table = threshold_metrics_table(
+        y_test,
+        y_test_score,
+        thresholds=dev_threshold_table["threshold"].to_numpy(),
+    )
+    y_test_pred = (y_test_score >= report_threshold).astype(int)
+
+    return {
+        "search": search,
+        "X_dev": X_dev,
+        "y_dev": y_dev,
+        "X_test": X_test,
+        "y_test": y_test,
+        "y_test_score": y_test_score,
+        "y_test_pred": y_test_pred,
+        "dev_threshold_table": dev_threshold_table,
+        "test_threshold_table": test_threshold_table,
+        "report_threshold": report_threshold,
+    }
+
+
 def evaluate_stages_on_final_test(
     train_df,
     test_df,
