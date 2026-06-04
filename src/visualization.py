@@ -65,8 +65,18 @@ def plot_categorical_proportions(df, columns, target="condition"):
 
 
 def plot_correlation_heatmap(df, target="condition"):
-    fig, ax = plt.subplots(figsize=(9, 7))
-    sns.heatmap(df.corr(numeric_only=True), cmap="coolwarm", center=0, square=True, ax=ax)
+    fig, ax = plt.subplots(figsize=(10, 8))
+    sns.heatmap(
+        df.corr(numeric_only=True),
+        cmap="coolwarm",
+        center=0,
+        square=True,
+        annot=True,
+        fmt=".2f",
+        annot_kws={"size": 7},
+        linewidths=0.4,
+        ax=ax,
+    )
     ax.set_title("Correlation matrix of encoded variables")
     return fig, ax
 
